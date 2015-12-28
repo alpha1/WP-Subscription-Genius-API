@@ -202,4 +202,15 @@ class wp_subscription_genius_api {
 			$this->prevent_future = true;
 		}
 	}
+	
+	//http://developer.subscriptiongenius.com/2/index.php?objectID=15&callID=45
+	function get_subscriber_history( $subscriber_id ){
+		$subscriber_id = intval( $subscriber_id );
+		$result = $this->send_get_request( "history", array( 'subscriber_id' => $subscriber_id ) );
+		if( $this->proceed_if_200( $result, 'create_history' ) ){
+			return $result['data']['history'];
+		} else {
+			return false;
+		}
+	}
 ?>
