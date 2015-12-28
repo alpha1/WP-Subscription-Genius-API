@@ -245,4 +245,79 @@ class wp_subscription_genius_api {
 			return false;
 		}
 	}
+	
+	//@API Documented at:
+	//http://developer.subscriptiongenius.com/2/index.php?objectID=3&callID=8
+	public function get_customfields( $load_fresh = false ){
+		if( !$load_fresh ){
+			if(!is_null($this->customfields)){
+				return $this->customfields;
+			}
+			if($this->cache){
+				$result = get_transient( "wp_sg_api_customfields" );
+				if($result){
+					return $result;
+				}
+			}
+		}
+		$result = $this->send_get_request( "customfields" );
+		if( $this->proceed_if_200( $result, 'get_customfields' ) ){
+			if($this->cache){
+				set_transient( "wp_sg_api_customfields", $result['data'], $this->cache );
+			}
+			$this->customfields = $result['data'];
+			return $result['data'];
+		} else {
+			return false;
+		}
+	}
+	
+	//@API Documented at:
+	//http://developer.subscriptiongenius.com/2/index.php?objectID=3&callID=48
+	function create_field( $name, $display, $type, $allow_other = false){
+		$allowed_types = array( 'select', 'checkbox', 'text', 'textrea', 'radio' );
+		if(!in_array($type, $allowed_types)){
+			return false;
+		}
+		$args = array(
+			'allow_other' 	=> $allow_other,
+			'display_as' 	=> $display,
+			'fieldType' 	=> $type,
+			'name' 			=> $name,
+		);
+		$result = $this->send_post_request( "customfields", $args );
+		if( $this->proceed_if_200( $result, 'create_field' ) ){
+			return $result['data']['field_id'];
+		} else {
+			return false;
+		}
+	}
+	
+	//Custom Helper Function
+	function get_custom_field_type( $field, $value ){
+		$customfield = $this->get_custom_field_by( $field, $value );
+		if($customfield){
+			return $customfield['type'];
+		}
+		return false;
+	}
+	
+	//Custom Helper Function
+	function get_custom_field_by( $field, $value ){
+		$fields = array( 'field_id', 'name', 'display_as' );
+		if(!in_array($field, $fields)){
+			return false;
+		}
+		$customfields = $this->get_customfields();
+		if($customfields){
+			foreach($customfields as $customfield){
+				if($customfield[$field] == $value){
+					return $customfield;
+				}
+			}
+			return false; //nothing found
+		} else {
+			return false;
+		}
+	}
 ?>
