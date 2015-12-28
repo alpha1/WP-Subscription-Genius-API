@@ -203,12 +203,44 @@ class wp_subscription_genius_api {
 		}
 	}
 	
+	//@API Documented at:
 	//http://developer.subscriptiongenius.com/2/index.php?objectID=15&callID=45
 	function get_subscriber_history( $subscriber_id ){
 		$subscriber_id = intval( $subscriber_id );
 		$result = $this->send_get_request( "history", array( 'subscriber_id' => $subscriber_id ) );
 		if( $this->proceed_if_200( $result, 'create_history' ) ){
 			return $result['data']['history'];
+		} else {
+			return false;
+		}
+	}
+
+	//@API Documented at:
+	//http://developer.subscriptiongenius.com/2/index.php?objectID=15&callID=46
+	function update_history( $history_id, $notes ){
+		$history_id = intval( $history_id );
+		$args = array(
+			'notes' => $notes,
+		);
+		$result = $this->send_delete_request( "history/{$history_id}", $args );
+		if( $this->proceed_if_204( $result, 'update_history' ) ){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	//@API Documented at: 
+	//http://developer.subscriptiongenius.com/2/index.php?objectID=15&callID=47
+	/*
+		NOTE: SG API is buggy and returning a 500 error but this should work when their end is fixed.
+	*/
+	function delete_history( $history_id ){
+		$history_id = intval( $history_id );
+		$result = $this->send_delete_request( "history/{$history_id}" );
+		print_r($result);
+		if( $this->proceed_if_204( $result, 'delete_history' ) ){
+			return true;
 		} else {
 			return false;
 		}
